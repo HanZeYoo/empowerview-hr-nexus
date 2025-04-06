@@ -12,6 +12,7 @@ import {
   X
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "./AuthProvider";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -21,14 +22,24 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children, title }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
+  const { signOut, user } = useAuth();
 
-  const handleLogout = () => {
-    // This is a placeholder for Supabase logout functionality
-    toast({
-      title: "Logged out",
-      description: "You have been successfully logged out."
-    });
-    navigate("/login");
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out."
+      });
+      navigate("/login");
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast({
+        variant: "destructive",
+        title: "Logout failed",
+        description: "There was an error logging out. Please try again."
+      });
+    }
   };
 
   const navItems = [
@@ -82,8 +93,18 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
             ))}
           </nav>
 
+          {/* User info */}
+          {user && (
+            <div className="border-t border-b p-4">
+              <div className="text-sm font-medium">{user.email}</div>
+              <div className="text-xs text-gray-500">
+                {user.user_metadata.first_name} {user.user_metadata.last_name}
+              </div>
+            </div>
+          )}
+
           {/* Logout button */}
-          <div className="border-t p-4">
+          <div className="p-4">
             <Button 
               variant="outline" 
               className="w-full justify-start"
@@ -109,10 +130,6 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
                 <Menu size={24} />
               </button>
               <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
-            </div>
-            
-            <div>
-              {/* Profile dropdown would go here in the future */}
             </div>
           </div>
         </header>

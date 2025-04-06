@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserIcon, KeyIcon } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -19,24 +20,29 @@ export default function Login() {
     setLoading(true);
 
     try {
-      // This is a placeholder for Supabase authentication
-      // After Supabase is connected, we'll replace this with actual authentication code
-      console.log("Login attempt with:", email);
-      
-      toast({
-        title: "Please connect Supabase",
-        description: "You need to connect Supabase to enable authentication",
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
       });
+
+      if (error) throw error;
+
+      toast({
+        title: "Login successful",
+        description: "Welcome back to HR Management System.",
+      });
+
+      // Redirect to dashboard on successful login
+      navigate("/dashboard");
       
-      setTimeout(() => setLoading(false), 1000);
-      
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: "Please check your credentials and try again.",
+        description: error.message || "Please check your credentials and try again.",
       });
+    } finally {
       setLoading(false);
     }
   };

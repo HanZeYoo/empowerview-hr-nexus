@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserIcon, KeyIcon, MailIcon, UserPlusIcon } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Signup() {
   const [firstName, setFirstName] = useState("");
@@ -32,24 +33,36 @@ export default function Signup() {
     setLoading(true);
     
     try {
-      // This is a placeholder for Supabase authentication
-      // After Supabase is connected, we'll replace this with actual signup code
-      console.log("Signup attempt with:", { firstName, lastName, email });
-      
-      toast({
-        title: "Please connect Supabase",
-        description: "You need to connect Supabase to enable user registration",
+      // Sign up the user with Supabase Auth
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+          }
+        }
       });
       
-      setTimeout(() => setLoading(false), 1000);
+      if (error) throw error;
       
-    } catch (error) {
+      toast({
+        title: "Account created successfully",
+        description: "You can now sign in to your new account.",
+      });
+      
+      // Redirect to login page
+      navigate("/login");
+      
+    } catch (error: any) {
       console.error("Signup error:", error);
       toast({
         variant: "destructive",
         title: "Signup Failed",
-        description: "An error occurred during signup. Please try again.",
+        description: error.message || "An error occurred during signup. Please try again.",
       });
+    } finally {
       setLoading(false);
     }
   };
