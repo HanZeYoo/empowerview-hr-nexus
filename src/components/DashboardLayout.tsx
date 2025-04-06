@@ -9,7 +9,8 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
-  X
+  X,
+  ClipboardList
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "./AuthProvider";
@@ -47,6 +48,7 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
     { name: "Employees", icon: Users, href: "/employees" },
     { name: "Departments", icon: Building2, href: "/departments" },
     { name: "Jobs", icon: Briefcase, href: "/jobs" },
+    { name: "Job Histories", icon: ClipboardList, href: "/jobhistories" },
   ];
 
   return (

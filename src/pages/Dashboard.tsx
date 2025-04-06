@@ -1,42 +1,99 @@
 
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Users, Building2, Briefcase, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [counts, setCounts] = useState({
+    employees: 0,
+    departments: 0,
+    jobs: 0,
+    jobHistories: 0
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchCounts() {
+      setIsLoading(true);
+      try {
+        // Fetch employee count
+        const { count: employeeCount, error: employeeError } = await supabase
+          .from('employee')
+          .select('*', { count: 'exact', head: true });
+        
+        if (employeeError) throw employeeError;
+
+        // Fetch department count
+        const { count: departmentCount, error: departmentError } = await supabase
+          .from('department')
+          .select('*', { count: 'exact', head: true });
+        
+        if (departmentError) throw departmentError;
+
+        // Fetch job count
+        const { count: jobCount, error: jobError } = await supabase
+          .from('job')
+          .select('*', { count: 'exact', head: true });
+        
+        if (jobError) throw jobError;
+
+        // Fetch job history count
+        const { count: jobHistoryCount, error: jobHistoryError } = await supabase
+          .from('jobhistory')
+          .select('*', { count: 'exact', head: true });
+        
+        if (jobHistoryError) throw jobHistoryError;
+
+        setCounts({
+          employees: employeeCount || 0,
+          departments: departmentCount || 0,
+          jobs: jobCount || 0,
+          jobHistories: jobHistoryCount || 0
+        });
+      } catch (error) {
+        console.error("Error fetching counts:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchCounts();
+  }, []);
   
-  // Mock statistics (will be replaced with real data from Supabase)
+  // Stats array with actual counts
   const stats = [
     { 
       title: "Total Employees", 
-      value: "0", 
+      value: isLoading ? "Loading..." : counts.employees.toString(), 
       icon: Users, 
       color: "bg-blue-100 text-blue-700",
       link: "/employees"
     },
     { 
       title: "Departments", 
-      value: "0", 
+      value: isLoading ? "Loading..." : counts.departments.toString(), 
       icon: Building2, 
       color: "bg-green-100 text-green-700",
       link: "/departments"
     },
     { 
       title: "Job Positions", 
-      value: "0", 
+      value: isLoading ? "Loading..." : counts.jobs.toString(), 
       icon: Briefcase, 
       color: "bg-purple-100 text-purple-700",
       link: "/jobs"
     },
     { 
-      title: "Recent Activities", 
-      value: "0", 
+      title: "Job Histories", 
+      value: isLoading ? "Loading..." : counts.jobHistories.toString(), 
       icon: Activity, 
       color: "bg-orange-100 text-orange-700",
-      link: "/activities"
+      link: "/jobhistories"
     },
   ];
 
@@ -69,15 +126,15 @@ export default function Dashboard() {
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>Connect to Supabase</CardTitle>
+              <CardTitle>HR System Overview</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="mb-4 text-muted-foreground">
-                This HR Management System requires Supabase for authentication and data storage. 
-                Click the green Supabase button in the top right to connect.
+                Welcome to your HR Management System powered by Supabase. 
+                This dashboard shows key metrics from your HR database.
               </p>
-              <Button onClick={() => navigate("/login")}>
-                Return to Login
+              <Button onClick={() => navigate("/employees")}>
+                Manage Employees
               </Button>
             </CardContent>
           </Card>

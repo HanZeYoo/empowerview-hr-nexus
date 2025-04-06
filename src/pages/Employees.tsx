@@ -1,22 +1,81 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { UserPlus, Search } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+interface Employee {
+  empno: string;
+  lastname: string | null;
+  firstname: string | null;
+  birthdate: string | null;
+  gender: string | null;
+  hiredate: string | null;
+  sepdate: string | null;
+}
 
 export default function Employees() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
-  // This would be replaced with actual data from Supabase
-  const employees = [];
-  
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
+
+  async function fetchEmployees() {
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('employee')
+        .select('*')
+        .order('lastname');
+
+      if (error) {
+        throw error;
+      }
+
+      setEmployees(data || []);
+    } catch (error: any) {
+      console.error("Error fetching employees:", error.message);
+      toast({
+        variant: "destructive",
+        title: "Failed to load employees",
+        description: error.message,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return "-";
+    return new Date(dateStr).toLocaleDateString();
+  };
+
+  const filteredEmployees = employees.filter((employee) => {
+    const fullName = `${employee.firstname || ""} ${employee.lastname || ""}`.toLowerCase();
+    const searchLower = searchTerm.toLowerCase();
+    return fullName.includes(searchLower) || 
+           (employee.empno && employee.empno.toLowerCase().includes(searchLower));
+  });
+
   const handleAddEmployee = () => {
     toast({
-      title: "Supabase Required",
-      description: "Please connect Supabase to add employees to the database."
+      title: "Feature Coming Soon",
+      description: "The ability to add employees will be available soon."
     });
   };
 
@@ -43,28 +102,44 @@ export default function Employees() {
         {/* Employee list */}
         <Card>
           <CardContent className="p-6">
-            {employees.length > 0 ? (
+            {isLoading ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+              </div>
+            ) : filteredEmployees.length > 0 ? (
               <div className="rounded-md border">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {/* Employee rows would be rendered here */}
-                  </tbody>
-                </table>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Employee ID</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Gender</TableHead>
+                      <TableHead>Birth Date</TableHead>
+                      <TableHead>Hire Date</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredEmployees.map((employee) => (
+                      <TableRow key={employee.empno}>
+                        <TableCell className="font-medium">{employee.empno}</TableCell>
+                        <TableCell>{`${employee.firstname || ""} ${employee.lastname || ""}`}</TableCell>
+                        <TableCell>{employee.gender || "-"}</TableCell>
+                        <TableCell>{formatDate(employee.birthdate)}</TableCell>
+                        <TableCell>{formatDate(employee.hiredate)}</TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="sm">View Details</Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
             ) : (
               <div className="text-center py-12">
                 <h3 className="mt-2 text-lg font-medium text-gray-900">No employees found</h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  Connect to Supabase to start adding employees to your HR system.
+                  {searchTerm ? "No employees match your search criteria." : "Start by adding employees to your HR system."}
                 </p>
                 <div className="mt-6">
                   <Button onClick={handleAddEmployee}>
