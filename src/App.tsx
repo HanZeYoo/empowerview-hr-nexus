@@ -12,6 +12,8 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Employees from "./pages/Employees";
+import Departments from "./pages/Departments";
+import Jobs from "./pages/Jobs";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -37,6 +39,16 @@ const App = () => {
               <Route path="/employees" element={
                 <ProtectedRoute>
                   <Employees />
+                </ProtectedRoute>
+              } />
+              <Route path="/departments" element={
+                <ProtectedRoute>
+                  <Departments />
+                </ProtectedRoute>
+              } />
+              <Route path="/jobs" element={
+                <ProtectedRoute>
+                  <Jobs />
                 </ProtectedRoute>
               } />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
