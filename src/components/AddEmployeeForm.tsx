@@ -38,7 +38,7 @@ const formSchema = z.object({
   firstname: z.string().optional(),
   lastname: z.string().optional(),
   gender: z.enum(["M", "F", "O"]).optional(),
-  birthdate: z.date(),
+  birthdate: z.date().optional(),
   hiredate: z.date(),
 });
 
@@ -191,7 +191,7 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ onSuccess, onCancel }
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent className="w-auto p-0 z-50" align="start">
                     <Calendar
                       mode="single"
                       selected={field.value}
@@ -233,7 +233,7 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ onSuccess, onCancel }
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent className="w-auto p-0 z-50" align="start">
                     <Calendar
                       mode="single"
                       selected={field.value}
