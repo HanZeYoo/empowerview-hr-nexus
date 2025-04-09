@@ -8,7 +8,10 @@ import {
   UserPlus, 
   Search, 
   Filter, 
-  X 
+  X,
+  Pencil,
+  Trash2,
+  AlertCircle
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +31,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
@@ -38,6 +51,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import AddEmployeeForm from "@/components/AddEmployeeForm";
+import EditEmployeeForm from "@/components/EditEmployeeForm";
 
 interface Employee {
   empno: string;
@@ -59,6 +73,9 @@ export default function Employees() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     gender: null,
     yearHired: null,
@@ -145,8 +162,54 @@ export default function Employees() {
     setIsAddDialogOpen(true);
   };
 
+  const handleEditEmployee = (employee: Employee) => {
+    setSelectedEmployee(employee);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleDeleteEmployee = (employee: Employee) => {
+    setSelectedEmployee(employee);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteEmployee = async () => {
+    if (!selectedEmployee) return;
+    
+    try {
+      const { error } = await supabase
+        .from("employee")
+        .delete()
+        .eq("empno", selectedEmployee.empno);
+        
+      if (error) throw error;
+      
+      toast({
+        title: "Employee Deleted",
+        description: "Employee has been successfully removed"
+      });
+      
+      // Refresh employee list
+      fetchEmployees();
+      setIsDeleteDialogOpen(false);
+      setSelectedEmployee(null);
+      
+    } catch (error: any) {
+      console.error("Error deleting employee:", error.message);
+      toast({
+        variant: "destructive",
+        title: "Failed to delete employee",
+        description: error.message,
+      });
+    }
+  };
+
   const handleAddSuccess = () => {
     setIsAddDialogOpen(false);
+    fetchEmployees();
+  };
+
+  const handleEditSuccess = () => {
+    setIsEditDialogOpen(false);
     fetchEmployees();
   };
 
@@ -287,7 +350,23 @@ export default function Employees() {
                           <TableCell>{formatDate(employee.birthdate)}</TableCell>
                           <TableCell>{formatDate(employee.hiredate)}</TableCell>
                           <TableCell className="text-right">
-                            <Button variant="ghost" size="sm">View Details</Button>
+                            <div className="flex justify-end gap-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleEditEmployee(employee)}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                                onClick={() => handleDeleteEmployee(employee)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -376,6 +455,57 @@ export default function Employees() {
           />
         </DialogContent>
       </Dialog>
+      
+      {/* Edit Employee Dialog */}
+      {selectedEmployee && (
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Edit Employee</DialogTitle>
+              <DialogDescription>
+                Update employee information for {selectedEmployee.firstname} {selectedEmployee.lastname} (ID: {selectedEmployee.empno})
+              </DialogDescription>
+            </DialogHeader>
+            <EditEmployeeForm 
+              employee={selectedEmployee}
+              onSuccess={handleEditSuccess} 
+              onCancel={() => setIsEditDialogOpen(false)}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
+      
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-destructive" />
+              Delete Employee
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {selectedEmployee && (
+                <>
+                  Are you sure you want to delete the employee{' '}
+                  <span className="font-semibold">
+                    {selectedEmployee.firstname} {selectedEmployee.lastname}
+                  </span>{' '}
+                  (ID: {selectedEmployee.empno})? This action cannot be undone.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDeleteEmployee}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }
