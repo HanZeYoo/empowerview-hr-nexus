@@ -22,13 +22,27 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import AddJobForm from "@/components/AddJobForm";
+import EditJobForm from "@/components/EditJobForm";
 
 export default function Jobs() {
   const [jobs, setJobs] = useState<{ jobcode: string; jobdesc: string | null }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedJob, setSelectedJob] = useState<{ jobcode: string; jobdesc: string | null } | null>(null);
 
   useEffect(() => {
     fetchJobs();
@@ -59,6 +73,36 @@ export default function Jobs() {
     }
   }
 
+  async function deleteJob(jobcode: string) {
+    try {
+      const { error } = await supabase
+        .from('job')
+        .delete()
+        .eq('jobcode', jobcode);
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Job deleted",
+        description: "The job position has been deleted successfully.",
+      });
+      
+      fetchJobs();
+    } catch (error: any) {
+      console.error("Error deleting job:", error.message);
+      toast({
+        variant: "destructive",
+        title: "Failed to delete job",
+        description: error.message,
+      });
+    } finally {
+      setDeleteDialogOpen(false);
+      setSelectedJob(null);
+    }
+  }
+
   const filteredJobs = jobs.filter(job => {
     const jobDesc = job.jobdesc?.toLowerCase() || '';
     const jobCode = job.jobcode.toLowerCase();
@@ -72,7 +116,7 @@ export default function Jobs() {
       <div className="space-y-6">
         <div className="flex justify-between items-center flex-wrap gap-4">
           <h1 className="text-2xl font-bold">Job Positions Management</h1>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
@@ -85,7 +129,7 @@ export default function Jobs() {
               </DialogHeader>
               <AddJobForm onJobAdded={() => {
                 fetchJobs();
-                setDialogOpen(false);
+                setAddDialogOpen(false);
               }} />
             </DialogContent>
           </Dialog>
@@ -127,10 +171,24 @@ export default function Jobs() {
                         <TableCell>{job.jobdesc}</TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
-                            <Button variant="ghost" size="icon">
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={() => {
+                                setSelectedJob(job);
+                                setEditDialogOpen(true);
+                              }}
+                            >
                               <Pencil className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="icon">
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={() => {
+                                setSelectedJob(job);
+                                setDeleteDialogOpen(true);
+                              }}
+                            >
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
@@ -164,6 +222,47 @@ export default function Jobs() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Edit Job Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Job Position</DialogTitle>
+          </DialogHeader>
+          {selectedJob && (
+            <EditJobForm 
+              job={selectedJob}
+              onJobUpdated={() => {
+                fetchJobs();
+                setEditDialogOpen(false);
+              }}
+              onCancel={() => setEditDialogOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Job Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete the job position "{selectedJob?.jobdesc}"? 
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => selectedJob && deleteJob(selectedJob.jobcode)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }
