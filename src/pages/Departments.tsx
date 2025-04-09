@@ -15,11 +15,20 @@ import {
 import { Plus, Pencil, Trash2, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import AddDepartmentForm from "@/components/AddDepartmentForm";
 
 export default function Departments() {
   const [departments, setDepartments] = useState<{ deptcode: string; deptname: string | null }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchDepartments();
@@ -63,10 +72,23 @@ export default function Departments() {
       <div className="space-y-6">
         <div className="flex justify-between items-center flex-wrap gap-4">
           <h1 className="text-2xl font-bold">Departments Management</h1>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Department
-          </Button>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Department
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Add New Department</DialogTitle>
+              </DialogHeader>
+              <AddDepartmentForm onDepartmentAdded={() => {
+                fetchDepartments();
+                setDialogOpen(false);
+              }} />
+            </DialogContent>
+          </Dialog>
         </div>
 
         <div className="relative w-full md:w-64">
@@ -123,10 +145,20 @@ export default function Departments() {
                 <p className="text-muted-foreground">
                   {searchTerm ? "No departments match your search criteria." : "No departments found"}
                 </p>
-                <Button variant="outline" className="mt-4">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Your First Department
-                </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="mt-4">
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add Your First Department
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Add New Department</DialogTitle>
+                    </DialogHeader>
+                    <AddDepartmentForm onDepartmentAdded={fetchDepartments} />
+                  </DialogContent>
+                </Dialog>
               </div>
             )}
           </CardContent>

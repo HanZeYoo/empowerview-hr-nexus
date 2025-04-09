@@ -1,51 +1,56 @@
 
-import { useState } from "react";
-import { z } from "zod";
+import React from "react";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "@/hooks/use-toast";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-// Form schema for validation
-const employeeSchema = z.object({
-  empno: z.string().min(1, { message: "Employee ID is required" }),
-  firstname: z.string().min(1, { message: "First name is required" }),
-  lastname: z.string().min(1, { message: "Last name is required" }),
-  gender: z.enum(["M", "F", "O"], { message: "Gender is required" }),
-  birthdate: z.date({ required_error: "Birthdate is required" }),
-  hiredate: z.date({ required_error: "Hire date is required" }),
+const formSchema = z.object({
+  empno: z.string().min(1, { message: "Employee number is required" }),
+  firstname: z.string().optional(),
+  lastname: z.string().optional(),
+  gender: z.enum(["M", "F", "O"]).optional(),
+  birthdate: z.date(),
+  hiredate: z.date(),
 });
 
-type FormValues = z.infer<typeof employeeSchema>;
+type FormValues = z.infer<typeof formSchema>;
 
 interface AddEmployeeFormProps {
-  onSuccess?: () => void;
-  onCancel?: () => void;
+  onEmployeeAdded?: () => void;
 }
 
-export default function AddEmployeeForm({ onSuccess, onCancel }: AddEmployeeFormProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
+const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ onEmployeeAdded }) => {
   const form = useForm<FormValues>({
-    resolver: zodResolver(employeeSchema),
+    resolver: zodResolver(formSchema),
     defaultValues: {
       empno: "",
       firstname: "",
@@ -58,113 +63,64 @@ export default function AddEmployeeForm({ onSuccess, onCancel }: AddEmployeeForm
 
   const onSubmit = async (data: FormValues) => {
     try {
-      setIsSubmitting(true);
-      
-      // Format dates for Postgres
-      const employeeData = {
-        ...data,
-        birthdate: format(data.birthdate, "yyyy-MM-dd"),
-        hiredate: format(data.hiredate, "yyyy-MM-dd"),
+      const employee = {
+        empno: data.empno,
+        firstname: data.firstname || null,
+        lastname: data.lastname || null,
+        gender: data.gender || null,
+        birthdate: data.birthdate ? format(data.birthdate, "yyyy-MM-dd") : null,
+        hiredate: data.hiredate ? format(data.hiredate, "yyyy-MM-dd") : null,
       };
 
-      // Insert into employee table
-      const { error } = await supabase
-        .from('employee')
-        .insert(employeeData);
+      const { error } = await supabase.from("employee").insert(employee);
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       toast({
         title: "Employee Added",
-        description: `Successfully added ${data.firstname} ${data.lastname}`,
+        description: "Employee has been successfully added",
       });
 
       form.reset();
-      onSuccess?.();
+      if (onEmployeeAdded) onEmployeeAdded();
+      
     } catch (error: any) {
-      console.error("Error adding employee:", error);
+      console.error("Error adding employee:", error.message);
       toast({
         variant: "destructive",
         title: "Failed to add employee",
-        description: error.message || "An error occurred while adding the employee",
+        description: error.message,
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
-            name="empno"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Employee ID*</FormLabel>
-                <FormControl>
-                  <Input placeholder="EMP001" {...field} />
-                </FormControl>
-                <FormDescription>
-                  Unique identifier for the employee
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
+        <FormField
+          control={form.control}
+          name="empno"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Employee Number*</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter employee number" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="firstname"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>First Name*</FormLabel>
+                <FormLabel>First Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="John" {...field} />
+                  <Input placeholder="Enter first name" {...field} />
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="lastname"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Last Name*</FormLabel>
-                <FormControl>
-                  <Input placeholder="Doe" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="gender"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Gender*</FormLabel>
-                <Select 
-                  onValueChange={field.onChange} 
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select gender" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="M">Male</SelectItem>
-                    <SelectItem value="F">Female</SelectItem>
-                    <SelectItem value="O">Other</SelectItem>
-                  </SelectContent>
-                </Select>
                 <FormMessage />
               </FormItem>
             )}
@@ -172,17 +128,56 @@ export default function AddEmployeeForm({ onSuccess, onCancel }: AddEmployeeForm
 
           <FormField
             control={form.control}
+            name="lastname"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Last Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter last name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <FormField
+          control={form.control}
+          name="gender"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Gender</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select gender" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="M">Male</SelectItem>
+                  <SelectItem value="F">Female</SelectItem>
+                  <SelectItem value="O">Other</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
             name="birthdate"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel>Birth Date*</FormLabel>
+                <FormLabel>Birth Date</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full pl-3 text-left font-normal",
+                          "pl-3 text-left font-normal",
                           !field.value && "text-muted-foreground"
                         )}
                       >
@@ -224,7 +219,7 @@ export default function AddEmployeeForm({ onSuccess, onCancel }: AddEmployeeForm
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full pl-3 text-left font-normal",
+                          "pl-3 text-left font-normal",
                           !field.value && "text-muted-foreground"
                         )}
                       >
@@ -242,9 +237,7 @@ export default function AddEmployeeForm({ onSuccess, onCancel }: AddEmployeeForm
                       mode="single"
                       selected={field.value}
                       onSelect={field.onChange}
-                      disabled={(date) =>
-                        date > new Date() || date < new Date("1900-01-01")
-                      }
+                      disabled={(date) => date > new Date()}
                       initialFocus
                     />
                   </PopoverContent>
@@ -255,23 +248,12 @@ export default function AddEmployeeForm({ onSuccess, onCancel }: AddEmployeeForm
           />
         </div>
 
-        <div className="flex justify-end space-x-4">
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={onCancel}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
-          <Button 
-            type="submit" 
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Saving..." : "Save Employee"}
-          </Button>
-        </div>
+        <Button type="submit" className="w-full">
+          Add Employee
+        </Button>
       </form>
     </Form>
   );
-}
+};
+
+export default AddEmployeeForm;
