@@ -40,6 +40,7 @@ const formSchema = z.object({
   gender: z.enum(["M", "F", "O"]).optional(),
   birthdate: z.date().optional(),
   hiredate: z.date(),
+  sepdate: z.date().optional().nullable(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -59,6 +60,7 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ onSuccess, onCancel }
       gender: undefined,
       birthdate: undefined,
       hiredate: new Date(),
+      sepdate: null,
     },
   });
 
@@ -71,6 +73,7 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ onSuccess, onCancel }
         gender: data.gender || null,
         birthdate: data.birthdate ? format(data.birthdate, "yyyy-MM-dd") : null,
         hiredate: data.hiredate ? format(data.hiredate, "yyyy-MM-dd") : null,
+        sepdate: data.sepdate ? format(data.sepdate, "yyyy-MM-dd") : null,
       };
 
       const { error } = await supabase.from("employee").insert(employee);
@@ -248,6 +251,58 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ onSuccess, onCancel }
             )}
           />
         </div>
+        
+        <FormField
+          control={form.control}
+          name="sepdate"
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <FormLabel>Separation Date</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "pl-3 text-left font-normal",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Not separated</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 z-50" align="start">
+                  <div className="p-2">
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start mb-2"
+                      onClick={() => field.onChange(null)}
+                    >
+                      Clear date
+                    </Button>
+                  </div>
+                  <Calendar
+                    mode="single"
+                    selected={field.value || undefined}
+                    onSelect={field.onChange}
+                    disabled={(date) => 
+                      date < (form.getValues().hiredate || new Date()) || 
+                      date > new Date()
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <div className="flex gap-2 justify-end">
           {onCancel && (
