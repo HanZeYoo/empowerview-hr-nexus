@@ -338,6 +338,7 @@ export default function Employees() {
                         <TableHead>Gender</TableHead>
                         <TableHead>Birth Date</TableHead>
                         <TableHead>Hire Date</TableHead>
+                        <TableHead>Separation Date</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -349,6 +350,7 @@ export default function Employees() {
                           <TableCell>{employee.gender === 'M' ? 'Male' : employee.gender === 'F' ? 'Female' : employee.gender || "-"}</TableCell>
                           <TableCell>{formatDate(employee.birthdate)}</TableCell>
                           <TableCell>{formatDate(employee.hiredate)}</TableCell>
+                          <TableCell>{formatDate(employee.sepdate)}</TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-2">
                               <Button 
