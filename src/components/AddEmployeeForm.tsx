@@ -1,5 +1,4 @@
-
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -51,6 +50,9 @@ interface AddEmployeeFormProps {
 }
 
 const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ onSuccess, onCancel }) => {
+  const [isLoadingEmpNo, setIsLoadingEmpNo] = useState(true);
+  const [nextEmpNo, setNextEmpNo] = useState("");
+  
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -63,6 +65,46 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ onSuccess, onCancel }
       sepdate: null,
     },
   });
+
+  useEffect(() => {
+    async function fetchNextEmployeeNumber() {
+      try {
+        setIsLoadingEmpNo(true);
+        
+        const { data, error } = await supabase
+          .from("employee")
+          .select("empno")
+          .order("empno", { ascending: false })
+          .limit(1);
+          
+        if (error) throw error;
+        
+        let nextNumber = "1001";
+        
+        if (data && data.length > 0) {
+          const highestEmpNo = data[0].empno;
+          const currentNumber = parseInt(highestEmpNo, 10);
+          if (!isNaN(currentNumber)) {
+            nextNumber = (currentNumber + 1).toString();
+          }
+        }
+        
+        setNextEmpNo(nextNumber);
+        form.setValue("empno", nextNumber);
+      } catch (error: any) {
+        console.error("Error fetching next employee number:", error.message);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to generate employee number",
+        });
+      } finally {
+        setIsLoadingEmpNo(false);
+      }
+    }
+    
+    fetchNextEmployeeNumber();
+  }, [form]);
 
   const onSubmit = async (data: FormValues) => {
     try {
@@ -108,7 +150,13 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ onSuccess, onCancel }
             <FormItem>
               <FormLabel>Employee Number*</FormLabel>
               <FormControl>
-                <Input placeholder="Enter employee number" {...field} />
+                <Input 
+                  placeholder={isLoadingEmpNo ? "Generating number..." : "Enter employee number"} 
+                  {...field} 
+                  readOnly 
+                  disabled={isLoadingEmpNo}
+                  className={isLoadingEmpNo ? "bg-gray-100 cursor-not-allowed" : "bg-gray-100"}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -310,7 +358,7 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ onSuccess, onCancel }
               Cancel
             </Button>
           )}
-          <Button type="submit">
+          <Button type="submit" disabled={isLoadingEmpNo}>
             Add Employee
           </Button>
         </div>
