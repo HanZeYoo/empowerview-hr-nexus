@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -31,6 +32,12 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { 
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger 
+} from "@/components/ui/collapsible";
+import JobHistorySection from "./JobHistorySection";
 
 const formSchema = z.object({
   empno: z.string().min(1, { message: "Employee number is required" }),
@@ -44,6 +51,13 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+interface JobHistory {
+  jobcode: string;
+  deptcode: string;
+  effdate: Date;
+  salary: number | null;
+}
+
 interface AddEmployeeFormProps {
   onSuccess?: () => void;
   onCancel?: () => void;
@@ -52,6 +66,8 @@ interface AddEmployeeFormProps {
 const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ onSuccess, onCancel }) => {
   const [isLoadingEmpNo, setIsLoadingEmpNo] = useState(true);
   const [nextEmpNo, setNextEmpNo] = useState("");
+  const [isJobHistoryOpen, setIsJobHistoryOpen] = useState(false);
+  const [jobHistories, setJobHistories] = useState<JobHistory[]>([]);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -106,6 +122,10 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ onSuccess, onCancel }
     fetchNextEmployeeNumber();
   }, [form]);
 
+  const handleJobHistoriesChange = (updatedJobHistories: JobHistory[]) => {
+    setJobHistories(updatedJobHistories);
+  };
+
   const onSubmit = async (data: FormValues) => {
     try {
       const employee = {
@@ -118,9 +138,26 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ onSuccess, onCancel }
         sepdate: data.sepdate ? format(data.sepdate, "yyyy-MM-dd") : null,
       };
 
-      const { error } = await supabase.from("employee").insert(employee);
+      // Insert employee
+      const { error: empError } = await supabase.from("employee").insert(employee);
+      if (empError) throw empError;
 
-      if (error) throw error;
+      // Insert job histories if any
+      if (jobHistories.length > 0) {
+        const jobHistoryRecords = jobHistories.map(history => ({
+          empno: data.empno,
+          jobcode: history.jobcode,
+          deptcode: history.deptcode,
+          effdate: format(history.effdate, "yyyy-MM-dd"),
+          salary: history.salary
+        }));
+
+        const { error: jobHistoryError } = await supabase
+          .from("jobhistory")
+          .insert(jobHistoryRecords);
+
+        if (jobHistoryError) throw jobHistoryError;
+      }
 
       toast({
         title: "Employee Added",
@@ -128,6 +165,7 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ onSuccess, onCancel }
       });
 
       form.reset();
+      setJobHistories([]);
       if (onSuccess) onSuccess();
       
     } catch (error: any) {
@@ -351,6 +389,31 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ onSuccess, onCancel }
             </FormItem>
           )}
         />
+
+        <Collapsible 
+          open={isJobHistoryOpen} 
+          onOpenChange={setIsJobHistoryOpen}
+          className="border rounded-md p-4"
+        >
+          <CollapsibleTrigger asChild>
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="w-full flex justify-between"
+              disabled={isLoadingEmpNo}
+            >
+              <span>Manage Job History</span>
+              <span>{isJobHistoryOpen ? "▲" : "▼"}</span>
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-4">
+            <JobHistorySection 
+              employeeNumber={nextEmpNo} 
+              onJobHistoriesChange={handleJobHistoriesChange}
+              isDisabled={isLoadingEmpNo} 
+            />
+          </CollapsibleContent>
+        </Collapsible>
 
         <div className="flex gap-2 justify-end">
           {onCancel && (
