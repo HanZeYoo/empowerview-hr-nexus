@@ -14,7 +14,6 @@ import Dashboard from "./pages/Dashboard";
 import Employees from "./pages/Employees";
 import Departments from "./pages/Departments";
 import Jobs from "./pages/Jobs";
-import JobHistories from "./pages/JobHistories";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -50,11 +49,6 @@ const App = () => {
               <Route path="/jobs" element={
                 <ProtectedRoute>
                   <Jobs />
-                </ProtectedRoute>
-              } />
-              <Route path="/jobhistories" element={
-                <ProtectedRoute>
-                  <JobHistories />
                 </ProtectedRoute>
               } />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
