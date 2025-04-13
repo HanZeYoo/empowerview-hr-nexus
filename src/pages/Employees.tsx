@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,7 @@ import {
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import AddEmployeeForm from "@/components/AddEmployeeForm";
 import EditEmployeeForm from "@/components/EditEmployeeForm";
+import ManageJobHistoryButton from "@/components/ManageJobHistoryButton";
 
 interface Employee {
   empno: string;
@@ -368,6 +370,7 @@ export default function Employees() {
                           <TableCell>{formatDate(employee.sepdate)}</TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-2">
+                              <ManageJobHistoryButton employee={employee} />
                               <Button 
                                 variant="outline" 
                                 size="sm"
