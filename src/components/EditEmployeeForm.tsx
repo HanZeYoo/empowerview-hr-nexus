@@ -39,11 +39,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import JobHistorySection from "./JobHistorySection";
-import { 
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger 
-} from "@/components/ui/collapsible";
 
 const formSchema = z.object({
   firstname: z.string().optional(),
@@ -86,7 +81,6 @@ const EditEmployeeForm: React.FC<EditEmployeeFormProps> = ({
   onCancel 
 }) => {
   const [isJobHistoryDialogOpen, setIsJobHistoryDialogOpen] = useState(false);
-  const [isJobHistoryOpen, setIsJobHistoryOpen] = useState(false);
   const [jobHistories, setJobHistories] = useState<JobHistory[]>([]);
   const [isLoadingJobHistories, setIsLoadingJobHistories] = useState(false);
 

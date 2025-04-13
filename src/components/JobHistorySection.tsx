@@ -56,12 +56,6 @@ interface Department {
   deptname: string | null;
 }
 
-interface Employee {
-  empno: string;
-  firstname: string | null;
-  lastname: string | null;
-}
-
 interface JobHistorySectionProps {
   employeeNumber: string;
   employeeName?: string;
@@ -253,22 +247,31 @@ const JobHistorySection: React.FC<JobHistorySectionProps> = ({
     }
   };
 
+  // Format the header as shown in the image
+  const headerContent = (
+    <div className="space-y-4">
+      <h2 className="text-xl font-bold text-center">Manage Job History Dialog</h2>
+      
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <span className="font-medium">Employee Number:</span>
+          <span className="ml-2">{employeeNumber}</span>
+          <span className="ml-2 text-gray-500">(non-editable)</span>
+        </div>
+        {employeeName && (
+          <div>
+            <span className="font-medium">Name:</span>
+            <span className="ml-2">{employeeName}</span>
+            <span className="ml-2 text-gray-500">(non-editable)</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="space-y-4">
-      {employeeNumber && (
-        <div className="flex flex-wrap gap-4 mb-4">
-          <div>
-            <span className="font-medium">Employee Number:</span>
-            <span className="ml-2">{employeeNumber}</span>
-          </div>
-          {employeeName && (
-            <div>
-              <span className="font-medium">Name:</span>
-              <span className="ml-2">{employeeName}</span>
-            </div>
-          )}
-        </div>
-      )}
+      {headerContent}
 
       {!isViewOnly && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -371,7 +374,7 @@ const JobHistorySection: React.FC<JobHistorySectionProps> = ({
         </div>
       )}
 
-      {jobHistories.length > 0 && (
+      {jobHistories.length > 0 ? (
         <div className="border rounded-md">
           <Table>
             <TableHeader>
@@ -398,32 +401,43 @@ const JobHistorySection: React.FC<JobHistorySectionProps> = ({
                   <TableCell>{history.salary !== null ? `$${history.salary.toLocaleString()}` : "-"}</TableCell>
                   {!isViewOnly && (
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
-                          onClick={() => handleEditJobHistory(index)}
-                          disabled={isDisabled}
-                        >
-                          Edit
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                          onClick={() => handleRemoveJobHistory(index)}
-                          disabled={isDisabled}
-                        >
-                          Delete
-                        </Button>
-                      </div>
+                      <Button 
+                        variant="link" 
+                        className="text-blue-600 hover:text-blue-800 px-2"
+                        onClick={() => handleEditJobHistory(index)}
+                        disabled={isDisabled}
+                      >
+                        Edit
+                      </Button>
+                      <Button 
+                        variant="link" 
+                        className="text-red-600 hover:text-red-800 px-2"
+                        onClick={() => handleRemoveJobHistory(index)}
+                        disabled={isDisabled}
+                      >
+                        Delete
+                      </Button>
                     </TableCell>
                   )}
                 </TableRow>
               ))}
             </TableBody>
           </Table>
+        </div>
+      ) : (
+        <div className="text-center py-6 border rounded-md bg-gray-50">
+          <p className="text-gray-500">No job history records found.</p>
+        </div>
+      )}
+
+      {!isViewOnly && jobHistories.length > 0 && (
+        <div className="flex justify-center mt-4">
+          <Button 
+            onClick={handleAddJobHistory}
+            disabled={isDisabled || isLoading}
+          >
+            Add
+          </Button>
         </div>
       )}
 
