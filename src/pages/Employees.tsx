@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -81,10 +80,9 @@ export default function Employees() {
     yearHired: null,
   });
 
-  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  
+
   useEffect(() => {
     fetchEmployees();
   }, []);
@@ -119,13 +117,11 @@ export default function Employees() {
     return new Date(dateStr).toLocaleDateString();
   };
 
-  // Extract year from date string
   const getYear = (dateStr: string | null) => {
     if (!dateStr) return null;
     return new Date(dateStr).getFullYear().toString();
   };
 
-  // Get unique year values for filtering
   const getUniqueHireYears = () => {
     const years = employees
       .map(emp => getYear(emp.hiredate))
@@ -134,25 +130,40 @@ export default function Employees() {
     return Array.from(new Set(years)).sort().reverse();
   };
 
-  // Apply filters and search
+  const fetchJobHistoriesForEmployee = async (employeeNumber: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("jobhistory")
+        .select("*")
+        .eq("empno", employeeNumber);
+
+      if (error) throw error;
+      return data;
+    } catch (error: any) {
+      console.error("Error fetching job histories:", error.message);
+      toast({
+        variant: "destructive",
+        title: "Failed to load job histories",
+        description: error.message,
+      });
+      return [];
+    }
+  };
+
   const filteredEmployees = employees.filter((employee) => {
-    // Text search
     const fullName = `${employee.firstname || ""} ${employee.lastname || ""}`.toLowerCase();
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch = fullName.includes(searchLower) || 
                           (employee.empno && employee.empno.toLowerCase().includes(searchLower));
     
-    // Gender filter
     const matchesGender = !filterOptions.gender || employee.gender === filterOptions.gender;
     
-    // Year hired filter
     const yearHired = getYear(employee.hiredate);
     const matchesYearHired = !filterOptions.yearHired || yearHired === filterOptions.yearHired;
     
     return matchesSearch && matchesGender && matchesYearHired;
   });
 
-  // Calculate pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentEmployees = filteredEmployees.slice(indexOfFirstItem, indexOfLastItem);
@@ -176,6 +187,13 @@ export default function Employees() {
     if (!selectedEmployee) return;
     
     try {
+      const { error: jhError } = await supabase
+        .from("jobhistory")
+        .delete()
+        .eq("empno", selectedEmployee.empno);
+      
+      if (jhError) throw jhError;
+
       const { error } = await supabase
         .from("employee")
         .delete()
@@ -185,10 +203,9 @@ export default function Employees() {
       
       toast({
         title: "Employee Deleted",
-        description: "Employee has been successfully removed"
+        description: "Employee and all job history records have been successfully removed"
       });
       
-      // Refresh employee list
       fetchEmployees();
       setIsDeleteDialogOpen(false);
       setSelectedEmployee(null);
@@ -225,7 +242,6 @@ export default function Employees() {
   return (
     <DashboardLayout title="Employees">
       <div className="space-y-6">
-        {/* Header with search and add button */}
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="relative flex-1">
             <div className="flex items-center gap-2">
@@ -320,7 +336,6 @@ export default function Employees() {
           </Button>
         </div>
 
-        {/* Employee list */}
         <Card>
           <CardContent className="p-6">
             {isLoading ? (
@@ -376,7 +391,6 @@ export default function Employees() {
                   </Table>
                 </div>
                 
-                {/* Pagination */}
                 {totalPages > 1 && (
                   <div className="mt-4">
                     <Pagination>
@@ -389,7 +403,6 @@ export default function Employees() {
                         </PaginationItem>
                         
                         {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                          // Logic to show pages around current page
                           let pageToShow;
                           if (totalPages <= 5) {
                             pageToShow = i + 1;
@@ -442,7 +455,6 @@ export default function Employees() {
         </Card>
       </div>
 
-      {/* Add Employee Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -458,7 +470,6 @@ export default function Employees() {
         </DialogContent>
       </Dialog>
       
-      {/* Edit Employee Dialog */}
       {selectedEmployee && (
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
@@ -477,7 +488,6 @@ export default function Employees() {
         </Dialog>
       )}
       
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -492,7 +502,7 @@ export default function Employees() {
                   <span className="font-semibold">
                     {selectedEmployee.firstname} {selectedEmployee.lastname}
                   </span>{' '}
-                  (ID: {selectedEmployee.empno})? This action cannot be undone.
+                  (ID: {selectedEmployee.empno})? This action will also delete all job history records and cannot be undone.
                 </>
               )}
             </AlertDialogDescription>
