@@ -189,7 +189,7 @@ const AddEmployeeForm: React.FC<AddEmployeeFormProps> = ({ onSuccess, onCancel }
               <FormLabel>Employee Number*</FormLabel>
               <FormControl>
                 <Input 
-                  placeholder={isLoadingEmpNo ? "Generating number..." : "Enter employee number"} 
+                  placeholder={isLoadingEmpNo ? "" : "Enter employee number"} 
                   {...field} 
                   readOnly 
                   disabled={isLoadingEmpNo}
