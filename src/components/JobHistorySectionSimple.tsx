@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { PlusCircle } from "lucide-react";
@@ -81,7 +80,6 @@ const JobHistorySectionSimple: React.FC<JobHistorySectionProps> = ({
   const [editingJobHistory, setEditingJobHistory] = useState<JobHistory | null>(null);
   const [editIndex, setEditIndex] = useState<number>(-1);
   
-  // New job history form state
   const [newJobHistory, setNewJobHistory] = useState<JobHistory>({
     jobcode: "",
     deptcode: "",
@@ -89,12 +87,10 @@ const JobHistorySectionSimple: React.FC<JobHistorySectionProps> = ({
     salary: null,
   });
 
-  // Fetch jobs and departments on component mount
   useEffect(() => {
     async function fetchData() {
       setIsLoading(true);
       try {
-        // Fetch jobs
         const { data: jobsData, error: jobsError } = await supabase
           .from("job")
           .select("jobcode, jobdesc");
@@ -102,7 +98,6 @@ const JobHistorySectionSimple: React.FC<JobHistorySectionProps> = ({
         if (jobsError) throw jobsError;
         setJobs(jobsData || []);
         
-        // Fetch departments
         const { data: deptsData, error: deptsError } = await supabase
           .from("department")
           .select("deptcode, deptname");
@@ -124,16 +119,13 @@ const JobHistorySectionSimple: React.FC<JobHistorySectionProps> = ({
     fetchData();
   }, []);
 
-  // Initialize with existing job histories if provided
   useEffect(() => {
     if (existingJobHistories.length > 0) {
       setJobHistories(existingJobHistories);
     }
   }, [existingJobHistories]);
 
-  // Add a new job history entry
   const handleAddJobHistory = async () => {
-    // Validate inputs
     if (!newJobHistory.jobcode) {
       toast({
         variant: "destructive",
@@ -162,14 +154,12 @@ const JobHistorySectionSimple: React.FC<JobHistorySectionProps> = ({
     }
     
     try {
-      // Add to job histories array locally first
       const newRecord = { 
         ...newJobHistory, 
         id: Date.now().toString(),
         empno: employeeNumber
       };
       
-      // Save to database
       const { error } = await supabase
         .from("jobhistory")
         .insert({
@@ -182,7 +172,6 @@ const JobHistorySectionSimple: React.FC<JobHistorySectionProps> = ({
       
       if (error) throw error;
       
-      // Update local state
       const updatedJobHistories = [...jobHistories, newRecord];
       setJobHistories(updatedJobHistories);
       onJobHistoriesChange(updatedJobHistories);
@@ -192,7 +181,6 @@ const JobHistorySectionSimple: React.FC<JobHistorySectionProps> = ({
         description: "Job history record has been successfully added"
       });
       
-      // Reset form
       setNewJobHistory({
         jobcode: "",
         deptcode: "",
@@ -209,7 +197,6 @@ const JobHistorySectionSimple: React.FC<JobHistorySectionProps> = ({
     }
   };
 
-  // Edit a job history entry
   const handleEditJobHistory = (index: number) => {
     const jobHistory = jobHistories[index];
     setEditingJobHistory({ ...jobHistory });
@@ -217,11 +204,9 @@ const JobHistorySectionSimple: React.FC<JobHistorySectionProps> = ({
     setIsEditDialogOpen(true);
   };
 
-  // Save edited job history
   const handleSaveEdit = async () => {
     if (!editingJobHistory) return;
     
-    // Validate inputs
     if (!editingJobHistory.jobcode) {
       toast({
         variant: "destructive",
@@ -250,7 +235,6 @@ const JobHistorySectionSimple: React.FC<JobHistorySectionProps> = ({
     }
 
     try {
-      // Update database
       const { error } = await supabase
         .from("jobhistory")
         .update({
@@ -265,7 +249,6 @@ const JobHistorySectionSimple: React.FC<JobHistorySectionProps> = ({
       
       if (error) throw error;
       
-      // Update job histories array
       const updatedJobHistories = [...jobHistories];
       updatedJobHistories[editIndex] = editingJobHistory;
       setJobHistories(updatedJobHistories);
@@ -276,7 +259,6 @@ const JobHistorySectionSimple: React.FC<JobHistorySectionProps> = ({
         description: "Job history record has been successfully updated"
       });
       
-      // Close dialog and reset form
       setIsEditDialogOpen(false);
       setEditingJobHistory(null);
       setEditIndex(-1);
@@ -290,12 +272,10 @@ const JobHistorySectionSimple: React.FC<JobHistorySectionProps> = ({
     }
   };
 
-  // Remove a job history entry
   const handleRemoveJobHistory = async (index: number) => {
     try {
       const historyToRemove = jobHistories[index];
       
-      // Remove from database
       const { error } = await supabase
         .from("jobhistory")
         .delete()
@@ -305,7 +285,6 @@ const JobHistorySectionSimple: React.FC<JobHistorySectionProps> = ({
       
       if (error) throw error;
       
-      // Update local state
       const updatedJobHistories = [...jobHistories];
       updatedJobHistories.splice(index, 1);
       setJobHistories(updatedJobHistories);
@@ -325,12 +304,10 @@ const JobHistorySectionSimple: React.FC<JobHistorySectionProps> = ({
     }
   };
 
-  // Update a field in the new job history form
   const handleInputChange = (field: keyof JobHistory, value: any) => {
     setNewJobHistory(prev => ({ ...prev, [field]: value }));
   };
 
-  // Update a field in the edit job history form
   const handleEditInputChange = (field: keyof JobHistory, value: any) => {
     if (editingJobHistory) {
       setEditingJobHistory(prev => ({ ...prev!, [field]: value }));
@@ -339,20 +316,16 @@ const JobHistorySectionSimple: React.FC<JobHistorySectionProps> = ({
 
   return (
     <div className="space-y-4">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-center mb-4">Manage Job History Dialog</h2>
-        
-        <div className="grid grid-cols-2 gap-4 mb-4">
+      <div className="mb-4">
+        <div className="grid grid-cols-2 gap-4">
           <div className="flex items-center">
             <span className="font-semibold mr-2">Employee Number:</span>
             <span>{employeeNumber}</span>
-            <span className="ml-2 text-gray-500 text-sm">(non-editable)</span>
           </div>
           {employeeName && (
             <div className="flex items-center">
               <span className="font-semibold mr-2">Name:</span>
               <span>{employeeName}</span>
-              <span className="ml-2 text-gray-500 text-sm">(non-editable)</span>
             </div>
           )}
         </div>
@@ -524,7 +497,6 @@ const JobHistorySectionSimple: React.FC<JobHistorySectionProps> = ({
         </div>
       )}
 
-      {/* Edit Job History Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
