@@ -8,11 +8,22 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { UserIcon, KeyIcon } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resetPasswordOpen, setResetPasswordOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -44,6 +55,35 @@ export default function Login() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Password Reset Email Sent",
+        description: "Check your email for a link to reset your password.",
+      });
+
+      setResetPasswordOpen(false);
+    } catch (error: any) {
+      console.error("Password reset error:", error);
+      toast({
+        variant: "destructive",
+        title: "Reset Failed",
+        description: error.message || "Unable to send reset email. Please try again.",
+      });
+    } finally {
+      setResetLoading(false);
     }
   };
 
@@ -79,9 +119,17 @@ export default function Login() {
                   <KeyIcon size={16} />
                   Password
                 </Label>
-                <Link to="/forgot-password" className="text-sm text-primary hover:underline">
+                <Button 
+                  type="button" 
+                  variant="link" 
+                  className="text-sm text-primary p-0 h-auto"
+                  onClick={() => {
+                    setResetEmail(email);
+                    setResetPasswordOpen(true);
+                  }}
+                >
                   Forgot password?
-                </Link>
+                </Button>
               </div>
               <Input
                 id="password"
@@ -113,6 +161,41 @@ export default function Login() {
           </CardFooter>
         </form>
       </Card>
+
+      {/* Password Reset Dialog */}
+      <Dialog open={resetPasswordOpen} onOpenChange={setResetPasswordOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Reset your password</DialogTitle>
+            <DialogDescription>
+              Enter your email address and we'll send you a link to reset your password.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleResetPassword}>
+            <div className="grid gap-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="reset-email">Email</Label>
+                <Input
+                  id="reset-email"
+                  type="email" 
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  placeholder="name@company.com"
+                  required
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setResetPasswordOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={resetLoading}>
+                {resetLoading ? "Sending..." : "Send Reset Link"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

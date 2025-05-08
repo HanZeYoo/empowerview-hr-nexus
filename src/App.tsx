@@ -14,6 +14,7 @@ import Dashboard from "./pages/Dashboard";
 import Employees from "./pages/Employees";
 import Departments from "./pages/Departments";
 import Jobs from "./pages/Jobs";
+import ResetPassword from "./pages/ResetPassword";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => {
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/dashboard" element={
                 <ProtectedRoute>
                   <Dashboard />
