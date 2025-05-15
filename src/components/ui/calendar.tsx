@@ -32,32 +32,29 @@ function Calendar({
 
   // Custom caption component with year dropdown
   const CustomCaption = ({ 
-    displayMonth, 
-    displayYear,
+    displayMonth,
     goToMonth, 
     nextMonth, 
-    previousMonth,
+    previousMonth
   }: {
     displayMonth: Date;
-    displayYear: number;
     goToMonth: (date: Date) => void;
     nextMonth: Date | undefined;
     previousMonth: Date | undefined;
   }) => {
     // Safely handle the case when displayMonth might be undefined
-    const currentMonth = displayMonth ? displayMonth.getMonth() : new Date().getMonth();
-    const currentYear = displayYear || new Date().getFullYear();
+    const currentDate = displayMonth || new Date();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
     
     const handleYearChange = (year: string) => {
-      // Create a new date based on current display month or fallback to current date
-      const newDate = displayMonth ? new Date(displayMonth) : new Date();
+      const newDate = new Date(currentDate);
       newDate.setFullYear(parseInt(year));
       goToMonth(newDate);
     };
 
     const handleMonthChange = (month: string) => {
-      // Create a new date based on current display month or fallback to current date
-      const newDate = displayMonth ? new Date(displayMonth) : new Date();
+      const newDate = new Date(currentDate);
       newDate.setMonth(parseInt(month));
       goToMonth(newDate);
     };
@@ -85,9 +82,9 @@ function Calendar({
             onValueChange={handleMonthChange}
           >
             <SelectTrigger className="h-7 w-[110px] text-xs font-medium">
-              <SelectValue />
+              <SelectValue placeholder={months[currentMonth].label} />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="z-[100]">
               {months.map((month) => (
                 <SelectItem key={month.value} value={month.value}>
                   {month.label}
@@ -101,9 +98,9 @@ function Calendar({
             onValueChange={handleYearChange}
           >
             <SelectTrigger className="h-7 w-[80px] text-xs font-medium">
-              <SelectValue />
+              <SelectValue placeholder={currentYear.toString()} />
             </SelectTrigger>
-            <SelectContent className="max-h-[200px] overflow-y-auto">
+            <SelectContent className="max-h-[200px] overflow-y-auto z-[100]">
               {years.map((year) => (
                 <SelectItem key={year} value={year.toString()}>
                   {year}
@@ -121,6 +118,7 @@ function Calendar({
               buttonVariants({ variant: "outline" }),
               "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
             )}
+            type="button"
           >
             <ChevronLeft className="h-4 w-4" />
             <span className="sr-only">Previous month</span>
@@ -132,6 +130,7 @@ function Calendar({
               buttonVariants({ variant: "outline" }),
               "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
             )}
+            type="button"
           >
             <ChevronRight className="h-4 w-4" />
             <span className="sr-only">Next month</span>
