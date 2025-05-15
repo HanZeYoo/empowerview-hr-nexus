@@ -84,7 +84,12 @@ function Calendar({
             <SelectTrigger className="h-7 w-[110px] text-xs font-medium">
               <SelectValue placeholder={months[currentMonth].label} />
             </SelectTrigger>
-            <SelectContent className="z-[100]">
+            <SelectContent 
+              className="z-[100] bg-popover" 
+              position="popper"
+              align="start"
+              sideOffset={4}
+            >
               {months.map((month) => (
                 <SelectItem key={month.value} value={month.value}>
                   {month.label}
@@ -100,7 +105,12 @@ function Calendar({
             <SelectTrigger className="h-7 w-[80px] text-xs font-medium">
               <SelectValue placeholder={currentYear.toString()} />
             </SelectTrigger>
-            <SelectContent className="max-h-[200px] overflow-y-auto z-[100]">
+            <SelectContent 
+              className="max-h-[200px] overflow-y-auto z-[100] bg-popover" 
+              position="popper"
+              align="start"
+              sideOffset={4}
+            >
               {years.map((year) => (
                 <SelectItem key={year} value={year.toString()}>
                   {year}
