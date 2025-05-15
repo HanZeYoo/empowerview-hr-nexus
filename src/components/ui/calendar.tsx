@@ -1,7 +1,7 @@
 
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DayPicker, DropdownProps } from "react-day-picker";
+import { DayPicker } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
@@ -33,7 +33,7 @@ function Calendar({
   // Custom caption component with year dropdown
   const CustomCaption = ({ 
     displayMonth, 
-    displayYear, 
+    displayYear,
     goToMonth, 
     nextMonth, 
     previousMonth,
@@ -44,14 +44,20 @@ function Calendar({
     nextMonth: Date | undefined;
     previousMonth: Date | undefined;
   }) => {
+    // Safely handle the case when displayMonth might be undefined
+    const currentMonth = displayMonth ? displayMonth.getMonth() : new Date().getMonth();
+    const currentYear = displayYear || new Date().getFullYear();
+    
     const handleYearChange = (year: string) => {
-      const newDate = new Date(displayMonth);
+      // Create a new date based on current display month or fallback to current date
+      const newDate = displayMonth ? new Date(displayMonth) : new Date();
       newDate.setFullYear(parseInt(year));
       goToMonth(newDate);
     };
 
     const handleMonthChange = (month: string) => {
-      const newDate = new Date(displayMonth);
+      // Create a new date based on current display month or fallback to current date
+      const newDate = displayMonth ? new Date(displayMonth) : new Date();
       newDate.setMonth(parseInt(month));
       goToMonth(newDate);
     };
@@ -75,7 +81,7 @@ function Calendar({
       <div className="flex justify-center px-1 pt-1 relative items-center">
         <div className="flex space-x-1">
           <Select
-            value={displayMonth.getMonth().toString()}
+            value={currentMonth.toString()}
             onValueChange={handleMonthChange}
           >
             <SelectTrigger className="h-7 w-[110px] text-xs font-medium">
@@ -91,7 +97,7 @@ function Calendar({
           </Select>
 
           <Select
-            value={displayYear.toString()}
+            value={currentYear.toString()}
             onValueChange={handleYearChange}
           >
             <SelectTrigger className="h-7 w-[80px] text-xs font-medium">
