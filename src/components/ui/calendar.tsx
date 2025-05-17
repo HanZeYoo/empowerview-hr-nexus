@@ -47,15 +47,17 @@ function Calendar({
     const currentMonth = currentDate.getMonth();
     const currentYear = currentDate.getFullYear();
     
-    const handleYearChange = (year: string) => {
+    const handleYearChange = (yearStr: string) => {
+      const year = parseInt(yearStr, 10);
       const newDate = new Date(currentDate);
-      newDate.setFullYear(parseInt(year));
+      newDate.setFullYear(year);
       goToMonth(newDate);
     };
 
-    const handleMonthChange = (month: string) => {
+    const handleMonthChange = (monthStr: string) => {
+      const month = parseInt(monthStr, 10);
       const newDate = new Date(currentDate);
-      newDate.setMonth(parseInt(month));
+      newDate.setMonth(month);
       goToMonth(newDate);
     };
 
