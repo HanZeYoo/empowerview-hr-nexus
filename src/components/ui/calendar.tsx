@@ -83,11 +83,13 @@ function Calendar({
             value={currentMonth.toString()}
             onValueChange={handleMonthChange}
           >
-            <SelectTrigger className="h-7 w-[110px] text-xs font-medium bg-popover">
-              <SelectValue placeholder={months[currentMonth].label} />
+            <SelectTrigger className="h-7 w-[110px] text-xs font-medium bg-background">
+              <SelectValue placeholder={months[currentMonth].label}>
+                {months[currentMonth].label}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent 
-              className="z-[1050] bg-popover pointer-events-auto" 
+              className="z-[1100] bg-background pointer-events-auto min-w-[110px]" 
               position="popper"
               align="start"
               sideOffset={4}
@@ -104,11 +106,13 @@ function Calendar({
             value={currentYear.toString()}
             onValueChange={handleYearChange}
           >
-            <SelectTrigger className="h-7 w-[80px] text-xs font-medium bg-popover">
-              <SelectValue placeholder={currentYear.toString()} />
+            <SelectTrigger className="h-7 w-[80px] text-xs font-medium bg-background">
+              <SelectValue placeholder={currentYear.toString()}>
+                {currentYear.toString()}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent 
-              className="max-h-[200px] overflow-y-auto z-[1050] bg-popover pointer-events-auto" 
+              className="max-h-[200px] overflow-y-auto z-[1100] bg-background pointer-events-auto min-w-[80px]" 
               position="popper"
               align="start"
               sideOffset={4}
@@ -155,7 +159,7 @@ function Calendar({
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
-      className={cn("p-3 pointer-events-auto bg-popover shadow-lg", className)}
+      className={cn("p-3 pointer-events-auto bg-background shadow-lg", className)}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
