@@ -81,11 +81,11 @@ function Calendar({
             value={currentMonth.toString()}
             onValueChange={handleMonthChange}
           >
-            <SelectTrigger className="h-7 w-[110px] text-xs font-medium">
+            <SelectTrigger className="h-7 w-[110px] text-xs font-medium bg-popover">
               <SelectValue placeholder={months[currentMonth].label} />
             </SelectTrigger>
             <SelectContent 
-              className="z-[150] bg-popover" 
+              className="z-[1050] bg-popover pointer-events-auto" 
               position="popper"
               align="start"
               sideOffset={4}
@@ -102,11 +102,11 @@ function Calendar({
             value={currentYear.toString()}
             onValueChange={handleYearChange}
           >
-            <SelectTrigger className="h-7 w-[80px] text-xs font-medium">
+            <SelectTrigger className="h-7 w-[80px] text-xs font-medium bg-popover">
               <SelectValue placeholder={currentYear.toString()} />
             </SelectTrigger>
             <SelectContent 
-              className="max-h-[200px] overflow-y-auto z-[150] bg-popover" 
+              className="max-h-[200px] overflow-y-auto z-[1050] bg-popover pointer-events-auto" 
               position="popper"
               align="start"
               sideOffset={4}
