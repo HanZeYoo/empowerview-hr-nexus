@@ -42,7 +42,7 @@ function Calendar({
     nextMonth: Date | undefined;
     previousMonth: Date | undefined;
   }) => {
-    // Safely handle the case when displayMonth might be undefined
+    // Handle the case when displayMonth might be undefined
     const currentDate = displayMonth || new Date();
     const currentMonth = currentDate.getMonth();
     const currentYear = currentDate.getFullYear();
@@ -85,13 +85,13 @@ function Calendar({
               <SelectValue placeholder={months[currentMonth].label} />
             </SelectTrigger>
             <SelectContent 
-              className="z-[100] bg-popover" 
+              className="z-[150] bg-popover" 
               position="popper"
               align="start"
               sideOffset={4}
             >
               {months.map((month) => (
-                <SelectItem key={month.value} value={month.value}>
+                <SelectItem key={month.value} value={month.value} className="cursor-pointer">
                   {month.label}
                 </SelectItem>
               ))}
@@ -106,13 +106,13 @@ function Calendar({
               <SelectValue placeholder={currentYear.toString()} />
             </SelectTrigger>
             <SelectContent 
-              className="max-h-[200px] overflow-y-auto z-[100] bg-popover" 
+              className="max-h-[200px] overflow-y-auto z-[150] bg-popover" 
               position="popper"
               align="start"
               sideOffset={4}
             >
               {years.map((year) => (
-                <SelectItem key={year} value={year.toString()}>
+                <SelectItem key={year} value={year.toString()} className="cursor-pointer">
                   {year}
                 </SelectItem>
               ))}
