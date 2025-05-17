@@ -81,7 +81,10 @@ function Calendar({
         <div className="flex space-x-1">
           <Select
             value={currentMonth.toString()}
-            onValueChange={handleMonthChange}
+            onValueChange={(value) => {
+              console.log("Month selected:", value);
+              handleMonthChange(value);
+            }}
           >
             <SelectTrigger className="h-7 w-[110px] text-xs font-medium bg-background">
               <SelectValue placeholder={months[currentMonth].label}>
@@ -89,7 +92,7 @@ function Calendar({
               </SelectValue>
             </SelectTrigger>
             <SelectContent 
-              className="z-[1100] bg-background pointer-events-auto min-w-[110px]" 
+              className="z-[1200] bg-background pointer-events-auto min-w-[110px]" 
               position="popper"
               align="start"
               sideOffset={4}
@@ -104,7 +107,10 @@ function Calendar({
 
           <Select
             value={currentYear.toString()}
-            onValueChange={handleYearChange}
+            onValueChange={(value) => {
+              console.log("Year selected:", value);
+              handleYearChange(value);
+            }}
           >
             <SelectTrigger className="h-7 w-[80px] text-xs font-medium bg-background">
               <SelectValue placeholder={currentYear.toString()}>
@@ -112,7 +118,7 @@ function Calendar({
               </SelectValue>
             </SelectTrigger>
             <SelectContent 
-              className="max-h-[200px] overflow-y-auto z-[1100] bg-background pointer-events-auto min-w-[80px]" 
+              className="max-h-[200px] overflow-y-auto z-[1200] bg-background pointer-events-auto min-w-[80px]" 
               position="popper"
               align="start"
               sideOffset={4}
