@@ -92,10 +92,10 @@ function Calendar({
               </SelectValue>
             </SelectTrigger>
             <SelectContent 
-              className="z-[1200] bg-background pointer-events-auto min-w-[110px]" 
+              className="z-[9999] bg-background pointer-events-auto min-w-[110px]" 
               position="popper"
               align="start"
-              sideOffset={4}
+              sideOffset={8}
             >
               {months.map((month) => (
                 <SelectItem key={month.value} value={month.value} className="cursor-pointer">
@@ -118,10 +118,10 @@ function Calendar({
               </SelectValue>
             </SelectTrigger>
             <SelectContent 
-              className="max-h-[200px] overflow-y-auto z-[1200] bg-background pointer-events-auto min-w-[80px]" 
+              className="max-h-[200px] overflow-y-auto z-[9999] bg-background pointer-events-auto min-w-[80px]" 
               position="popper"
               align="start"
-              sideOffset={4}
+              sideOffset={8}
             >
               {years.map((year) => (
                 <SelectItem key={year} value={year.toString()} className="cursor-pointer">
