@@ -5,13 +5,6 @@ import { DayPicker } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
@@ -21,156 +14,15 @@ function Calendar({
   showOutsideDays = true,
   ...props
 }: CalendarProps) {
-  // Generate an array of years for the dropdown
-  const getCurrentYear = () => new Date().getFullYear();
-  const startYear = 1950;
-  const endYear = getCurrentYear() + 5;
-  const years = Array.from(
-    { length: endYear - startYear + 1 },
-    (_, i) => startYear + i
-  ).reverse();
-
-  // Custom caption component with year dropdown
-  const CustomCaption = ({ 
-    displayMonth,
-    goToMonth, 
-    nextMonth, 
-    previousMonth
-  }: {
-    displayMonth: Date;
-    goToMonth: (date: Date) => void;
-    nextMonth: Date | undefined;
-    previousMonth: Date | undefined;
-  }) => {
-    // Handle the case when displayMonth might be undefined
-    const currentDate = displayMonth || new Date();
-    const currentMonth = currentDate.getMonth();
-    const currentYear = currentDate.getFullYear();
-    
-    const handleYearChange = (yearStr: string) => {
-      const year = parseInt(yearStr, 10);
-      const newDate = new Date(currentDate);
-      newDate.setFullYear(year);
-      goToMonth(newDate);
-    };
-
-    const handleMonthChange = (monthStr: string) => {
-      const month = parseInt(monthStr, 10);
-      const newDate = new Date(currentDate);
-      newDate.setMonth(month);
-      goToMonth(newDate);
-    };
-
-    const months = [
-      { value: "0", label: "January" },
-      { value: "1", label: "February" },
-      { value: "2", label: "March" },
-      { value: "3", label: "April" },
-      { value: "4", label: "May" },
-      { value: "5", label: "June" },
-      { value: "6", label: "July" },
-      { value: "7", label: "August" },
-      { value: "8", label: "September" },
-      { value: "9", label: "October" },
-      { value: "10", label: "November" },
-      { value: "11", label: "December" },
-    ];
-
-    return (
-      <div className="flex justify-center px-1 pt-1 relative items-center">
-        <div className="flex space-x-1">
-          <Select
-            value={currentMonth.toString()}
-            onValueChange={(value) => {
-              console.log("Month selected:", value);
-              handleMonthChange(value);
-            }}
-          >
-            <SelectTrigger className="h-7 w-[110px] text-xs font-medium bg-background">
-              <SelectValue placeholder={months[currentMonth].label}>
-                {months[currentMonth].label}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent 
-              className="z-[9999] bg-background pointer-events-auto min-w-[110px]" 
-              position="popper"
-              align="start"
-              sideOffset={8}
-            >
-              {months.map((month) => (
-                <SelectItem key={month.value} value={month.value} className="cursor-pointer">
-                  {month.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select
-            value={currentYear.toString()}
-            onValueChange={(value) => {
-              console.log("Year selected:", value);
-              handleYearChange(value);
-            }}
-          >
-            <SelectTrigger className="h-7 w-[80px] text-xs font-medium bg-background">
-              <SelectValue placeholder={currentYear.toString()}>
-                {currentYear.toString()}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent 
-              className="max-h-[200px] overflow-y-auto z-[9999] bg-background pointer-events-auto min-w-[80px]" 
-              position="popper"
-              align="start"
-              sideOffset={8}
-            >
-              {years.map((year) => (
-                <SelectItem key={year} value={year.toString()} className="cursor-pointer">
-                  {year}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-x-1 flex items-center absolute right-1">
-          <button
-            onClick={() => previousMonth && goToMonth(previousMonth)}
-            disabled={!previousMonth}
-            className={cn(
-              buttonVariants({ variant: "outline" }),
-              "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
-            )}
-            type="button"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            <span className="sr-only">Previous month</span>
-          </button>
-          <button
-            onClick={() => nextMonth && goToMonth(nextMonth)}
-            disabled={!nextMonth}
-            className={cn(
-              buttonVariants({ variant: "outline" }),
-              "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
-            )}
-            type="button"
-          >
-            <ChevronRight className="h-4 w-4" />
-            <span className="sr-only">Next month</span>
-          </button>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
-      className={cn("p-3 pointer-events-auto bg-background shadow-lg", className)}
+      className={cn("p-3 pointer-events-auto", className)}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
         caption: "flex justify-center pt-1 relative items-center",
-        caption_label: "text-sm font-medium hidden", // Hide default caption
+        caption_label: "text-sm font-medium",
         nav: "space-x-1 flex items-center",
         nav_button: cn(
           buttonVariants({ variant: "outline" }),
@@ -203,7 +55,6 @@ function Calendar({
       components={{
         IconLeft: ({ ..._props }) => <ChevronLeft className="h-4 w-4" />,
         IconRight: ({ ..._props }) => <ChevronRight className="h-4 w-4" />,
-        Caption: CustomCaption,
       }}
       {...props}
     />
