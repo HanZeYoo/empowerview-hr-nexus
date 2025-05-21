@@ -12,6 +12,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Employees from "./pages/Employees";
+import EmployeeView from "./pages/EmployeeView";
 import Departments from "./pages/Departments";
 import Jobs from "./pages/Jobs";
 import ResetPassword from "./pages/ResetPassword";
@@ -41,6 +42,11 @@ const App = () => {
               <Route path="/employees" element={
                 <ProtectedRoute>
                   <Employees />
+                </ProtectedRoute>
+              } />
+              <Route path="/employees/:id" element={
+                <ProtectedRoute>
+                  <EmployeeView />
                 </ProtectedRoute>
               } />
               <Route path="/departments" element={

@@ -1,5 +1,5 @@
-
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import {
   Search, 
   Filter, 
   X,
+  Eye,
   Pencil,
   Trash2,
   AlertCircle
@@ -70,6 +71,7 @@ interface FilterOptions {
 }
 
 export default function Employees() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -241,6 +243,10 @@ export default function Employees() {
 
   const hasActiveFilters = filterOptions.gender !== null || filterOptions.yearHired !== null;
 
+  const viewEmployee = (employee: Employee) => {
+    navigate(`/employees/${employee.empno}`);
+  };
+
   return (
     <DashboardLayout title="Employees">
       <div className="space-y-6">
@@ -370,6 +376,13 @@ export default function Employees() {
                           <TableCell>{formatDate(employee.sepdate)}</TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => viewEmployee(employee)}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
                               <ManageJobHistoryButton employee={employee} />
                               <Button 
                                 variant="outline" 
