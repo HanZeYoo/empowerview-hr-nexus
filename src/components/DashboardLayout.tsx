@@ -10,6 +10,7 @@ import {
   LogOut,
   Menu,
   X,
+  Shield,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "./AuthProvider";
@@ -22,7 +23,7 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children, title }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
-  const { signOut, user } = useAuth();
+  const { signOut, user, isAdmin } = useAuth();
 
   const handleLogout = async () => {
     try {
@@ -47,6 +48,11 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
     { name: "Employees", icon: Users, href: "/employees" },
     { name: "Departments", icon: Building2, href: "/departments" },
     { name: "Jobs", icon: Briefcase, href: "/jobs" },
+  ];
+
+  // Admin-only navigation items
+  const adminNavItems = [
+    { name: "Admin Dashboard", icon: Shield, href: "/admin" },
   ];
 
   return (
@@ -91,6 +97,29 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
                 {item.name}
               </Button>
             ))}
+            
+            {isAdmin && (
+              <>
+                <div className="pt-2 pb-2">
+                  <div className="border-t border-gray-200 my-2"></div>
+                  <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Admin
+                  </p>
+                </div>
+                
+                {adminNavItems.map((item) => (
+                  <Button 
+                    key={item.name}
+                    variant="ghost"
+                    className="w-full justify-start text-left font-normal hover:bg-gray-100"
+                    onClick={() => navigate(item.href)}
+                  >
+                    <item.icon className="mr-3 h-5 w-5" />
+                    {item.name}
+                  </Button>
+                ))}
+              </>
+            )}
           </nav>
 
           {/* User info */}
@@ -100,6 +129,13 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
               <div className="text-xs text-gray-500">
                 {user.user_metadata.first_name} {user.user_metadata.last_name}
               </div>
+              {isAdmin && (
+                <div className="mt-1">
+                  <span className="inline-flex items-center rounded-full bg-primary px-2 py-0.5 text-xs font-semibold text-white">
+                    Admin
+                  </span>
+                </div>
+              )}
             </div>
           )}
 
